@@ -1,5 +1,7 @@
 #include "window.hpp"
 
+#include <stdexcept>
+
 namespace Cosmos {
 
     Window::Window(int width, int height, const char* name) : WIDTH(width), HEIGHT(height), windowName(name) {
@@ -25,5 +27,12 @@ namespace Cosmos {
 
     void Window::pollEvents() {
         glfwPollEvents();
+    }
+
+    void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
+    {
+        if(glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface!");
+        }
     }
 }

@@ -17,6 +17,7 @@ namespace Cosmos {
 
         bool shouldClose();
         void pollEvents();
+        void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
         private:
         void initWindow();
