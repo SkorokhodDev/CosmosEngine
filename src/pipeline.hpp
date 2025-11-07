@@ -3,16 +3,28 @@
 #include <string>
 #include <vector>
 
-#include "my_engine_device.hpp"
+#include "engine_device.hpp"
 
 namespace Cosmos {
 
-    struct PipelineConfigInfo {};
+    struct PipelineConfigInfo {
+        VkViewport viewport;
+        VkRect2D scissor;
+        VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+        VkPipelineRasterizationStateCreateInfo rasterizationInfo;
+        VkPipelineMultisampleStateCreateInfo multisampleInfo;
+        VkPipelineColorBlendAttachmentState colorBlendAttachment;
+        VkPipelineColorBlendStateCreateInfo colorBlendInfo;
+        VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+        VkPipelineLayout pipelineLayout = nullptr;
+        VkRenderPass renderPass = nullptr;
+        uint32_t subpass = 0;
+    };
 
 
     class Pipeline {
     public:
-        Pipeline(MyEngineDevice& device, const std::string& vertFilePath, const std::string& fragFilePath,
+        Pipeline(EngineDevice& device, const std::string& vertFilePath, const std::string& fragFilePath,
                  const PipelineConfigInfo& configInfo);
         ~Pipeline();
         
@@ -29,7 +41,7 @@ namespace Cosmos {
         
         void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule); 
 
-        MyEngineDevice& engineDevice;
+        EngineDevice& engineDevice;
         VkPipeline graphicsPipeline;
         VkShaderModule vertShaderModule;
         VkShaderModule fragShaderModule;

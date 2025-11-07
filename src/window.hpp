@@ -19,6 +19,8 @@ namespace Cosmos {
         void pollEvents();
         void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
+        VkExtent2D getExtent() {return {static_cast<uint32_t>(WIDTH), static_cast<uint32_t>(HEIGHT)};}
+
         private:
         void initWindow();
 

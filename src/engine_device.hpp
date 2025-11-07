@@ -37,7 +37,7 @@ struct QueueFamilyIndices {
   bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
 
-class MyEngineDevice {
+class EngineDevice {
  public:
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
@@ -45,14 +45,14 @@ class MyEngineDevice {
   const bool enableValidationLayers = true;
 #endif
 
-  MyEngineDevice(Window &window);
-  ~MyEngineDevice();
+  EngineDevice(Window &window);
+  ~EngineDevice();
 
   // Not copyable or movable
-  MyEngineDevice(const MyEngineDevice &) = delete;
-  void operator=(const MyEngineDevice &) = delete;
-  MyEngineDevice(MyEngineDevice &&) = delete;
-  MyEngineDevice &operator=(MyEngineDevice &&) = delete;
+  EngineDevice(const EngineDevice &) = delete;
+  void operator=(const EngineDevice &) = delete;
+  EngineDevice(EngineDevice &&) = delete;
+  EngineDevice &operator=(EngineDevice &&) = delete;
 
   VkCommandPool getCommandPool() { return commandPool; }
   VkDevice device() { return device_; }
