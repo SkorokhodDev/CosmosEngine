@@ -22,6 +22,7 @@ namespace Cosmos {
         Application& operator=(const Application&) = delete;  
 
         void run();
+        
     private:
         void createPipelineLayout();
         void createPipeline();
@@ -33,7 +34,7 @@ namespace Cosmos {
         EngineSwapChain engineSwapChain{engineDevice, window.getExtent()};
         std::unique_ptr<Pipeline> ptr_Pipeline;
         VkPipelineLayout pipelineLayout;
-        std::vector<VkCommandBuffer> commandBuffer;
+        std::vector<VkCommandBuffer> commandBuffers;
     };
 
 } 
