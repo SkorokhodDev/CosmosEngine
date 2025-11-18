@@ -7,6 +7,9 @@ namespace Cosmos {
 
     Application::Application()
     {
+        // firsly load models
+        loadModels();
+
         createPipelineLayout();
         createPipeline();
         createCommandBuffers();
@@ -95,8 +98,10 @@ namespace Cosmos {
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             ptr_Pipeline->bind(commandBuffers[i]);
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0); // draw 3 vertices and 1 instance
-            
+            //vkCmdDraw(commandBuffers[i], 3, 1, 0, 0); // draw 3 vertices and 1 instance
+            ptr_Model->bind(commandBuffers[i]);
+            ptr_Model->draw(commandBuffers[i]);
+
             vkCmdEndRenderPass(commandBuffers[i]);
             if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
             {
@@ -121,5 +126,15 @@ namespace Cosmos {
         {
             throw std::runtime_error("failed to present swap chain image!");
         }
+    }
+    void Application::loadModels()
+    {
+        std::vector<Model::Vertex> vertices{
+            {{0.0f, -0.5f}},
+            {{0.5f, 0.5f}},
+            {{-0.5f, 0.5f}}
+        };
+
+        ptr_Model = std::make_unique<Model>(engineDevice, vertices);
     }
 }

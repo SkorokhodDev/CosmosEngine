@@ -6,6 +6,7 @@
 #include "pipeline.hpp"
 #include "engine_swap_chain.hpp"
 #include "engine_device.hpp"
+#include "model.hpp"
 
 namespace Cosmos {
 
@@ -22,12 +23,13 @@ namespace Cosmos {
         Application& operator=(const Application&) = delete;  
 
         void run();
-        
+
     private:
         void createPipelineLayout();
         void createPipeline();
         void createCommandBuffers();
         void drawFrame();
+        void loadModels();
 
         Window window{WIDTH, HEIGHT, "Cosmos Engine"};
         EngineDevice engineDevice{window};
@@ -35,6 +37,8 @@ namespace Cosmos {
         std::unique_ptr<Pipeline> ptr_Pipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;
+        std::unique_ptr<Model> ptr_Model;
+
     };
 
 } 
