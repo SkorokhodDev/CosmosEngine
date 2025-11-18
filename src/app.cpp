@@ -131,8 +131,8 @@ namespace Cosmos {
     {
         std::vector<Model::Vertex> vertices{
             {{0.0f, -0.5f}},
-            {{0.5f, 0.5f}},
-            {{-0.5f, 0.5f}}
+            {{-0.5f, 0.5f}},
+            {{0.5f, 0.5f}}
         };
 
         ptr_Model = std::make_unique<Model>(engineDevice, vertices);
