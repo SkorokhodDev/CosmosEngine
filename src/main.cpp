@@ -4,6 +4,7 @@
 
 #include "app.hpp"
 
+// TODO: write a macros to create default copy constructors.
 
 int main() {
     Cosmos::Application app;

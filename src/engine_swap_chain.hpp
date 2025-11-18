@@ -8,6 +8,7 @@
 // std lib headers
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace Cosmos {
 
@@ -16,6 +17,7 @@ class EngineSwapChain {
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   EngineSwapChain(EngineDevice &deviceRef, VkExtent2D windowExtent);
+  EngineSwapChain(EngineDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<EngineSwapChain> previous);
   ~EngineSwapChain();
 
   EngineSwapChain(const EngineSwapChain &) = delete;
@@ -39,6 +41,7 @@ class EngineSwapChain {
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
  private:
+  void init();
   void createSwapChain();
   void createImageViews();
   void createDepthResources();
@@ -69,6 +72,7 @@ class EngineSwapChain {
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
+  std::shared_ptr<EngineSwapChain> oldSwapChain;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;

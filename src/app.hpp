@@ -28,12 +28,15 @@ namespace Cosmos {
         void createPipelineLayout();
         void createPipeline();
         void createCommandBuffers();
+        void freeCommandBuffers();
         void drawFrame();
         void loadModels();
+        void recreateSwapChain();
+        void recordCommandBuffer(int imageIndex);
 
         Window window{WIDTH, HEIGHT, "Cosmos Engine"};
         EngineDevice engineDevice{window};
-        EngineSwapChain engineSwapChain{engineDevice, window.getExtent()};
+        std::unique_ptr<EngineSwapChain> engineSwapChain;
         std::unique_ptr<Pipeline> ptr_Pipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;

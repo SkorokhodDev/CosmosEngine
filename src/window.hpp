@@ -8,7 +8,7 @@ namespace Cosmos {
     
     class Window
     {
-        public:
+    public:
         Window(int width, int height, const char* name);
         ~Window();
         // deleting copy constructor and assignment operator to prevent copying
@@ -17,15 +17,23 @@ namespace Cosmos {
 
         bool shouldClose();
         void pollEvents();
+        
         void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+        
+        bool wasWindowResized() {return framebufferResized;}
+        void resetWindowResizedFlag() {framebufferResized = false;}
+
 
         VkExtent2D getExtent() {return {static_cast<uint32_t>(WIDTH), static_cast<uint32_t>(HEIGHT)};}
 
-        private:
+    private:
+        static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
         void initWindow();
+        
 
-        const int WIDTH = 800;
-        const int HEIGHT = 600;
+        int WIDTH = 800;
+        int HEIGHT = 600;
+        bool framebufferResized = false; // flag to see if window resized
 
         std::string windowName;
         GLFWwindow* window;
