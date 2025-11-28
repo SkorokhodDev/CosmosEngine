@@ -3,13 +3,17 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <stdexcept>
 #include <array>
 
+#include <iostream>
+
 namespace Cosmos {
 
     struct SimplePushConstantData{
+        glm::mat2 transform{1.f}; // diagonal == 1, all others is 0
         glm::vec2 offset;
         alignas(16) glm::vec3 color;
     };
@@ -17,7 +21,7 @@ namespace Cosmos {
     Application::Application()
     {
         // firsly load models
-        loadModels();
+        loadGameObjects();
 
         createPipelineLayout();
         recreateSwapChain();
@@ -104,7 +108,7 @@ namespace Cosmos {
         commandBuffers.clear();
     }
 
-    void Application::loadModels()
+    void Application::loadGameObjects()
     {
         std::vector<Model::Vertex> vertices{
             {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -112,7 +116,17 @@ namespace Cosmos {
             {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
         };
 
-        ptr_Model = std::make_unique<Model>(engineDevice, vertices);
+        //better use shared ptr, bec it allows us to use single model between multiple game objects
+        auto ptr_Model = std::make_shared<Model>(engineDevice, vertices);
+
+        auto triangle = GameObject::createGameObject();
+        triangle.model = ptr_Model;
+        triangle.color = {0.1f, 0.8f, 0.1f};
+        triangle.transform2d.translation.x = .2f;
+        triangle.transform2d.scale = {2.f, 0.5f};
+        triangle.transform2d.rotation = 0.25 * glm::two_pi<float>();
+
+        gameObjects.push_back(std::move(triangle));
     }
 
     void Application::recreateSwapChain()
@@ -214,30 +228,39 @@ namespace Cosmos {
         vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
         vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
 
-        ptr_Pipeline->bind(commandBuffers[imageIndex]);
-        //vkCmdDraw(commandBuffers[imageIndex], 3, 1, 0, 0); // draw 3 vertices and 1 instance
-        ptr_Model->bind(commandBuffers[imageIndex]);
-
-        for(int j = 0; j < 4; j++)
-        {
-            SimplePushConstantData push{};
-            push.offset = {0.0f, -0.4f + j * 0.25f};
-            push.color = {1.0f, 1.0f, 0.2f - 0.2f * j};
-
-            vkCmdPushConstants(commandBuffers[imageIndex], 
-                pipelineLayout, 
-                VK_SHADER_STAGE_VERTEX_BIT,
-                0,
-                sizeof(SimplePushConstantData),
-                &push);
-            ptr_Model->draw(commandBuffers[imageIndex]);
-        }
+        renderGameObjects(commandBuffers[imageIndex]);
 
         vkCmdEndRenderPass(commandBuffers[imageIndex]);
 
         if(vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to record command buffer!");
+        }
+    }
+
+    void Application::renderGameObjects(VkCommandBuffer commandBuffer)
+    {
+        ptr_Pipeline->bind(commandBuffer);
+        
+        for(auto& obj : gameObjects)
+        {
+            obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + 0.01f, glm::two_pi<float>());
+
+            SimplePushConstantData push{};
+            push.offset = obj.transform2d.translation;
+            push.color = obj.color;
+            //std::cout << push.color.x << " " << push.color.y << std::endl;
+            push.transform = obj.transform2d.mat2();
+
+            vkCmdPushConstants(commandBuffer, 
+                pipelineLayout, 
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(SimplePushConstantData),
+                &push);
+            
+            obj.model->bind(commandBuffer);
+            obj.model->draw(commandBuffer);
         }
     }
 }

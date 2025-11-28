@@ -7,6 +7,7 @@
 #include "engine_swap_chain.hpp"
 #include "engine_device.hpp"
 #include "model.hpp"
+#include "game_object.hpp"
 
 namespace Cosmos {
 
@@ -30,9 +31,10 @@ namespace Cosmos {
         void createCommandBuffers();
         void freeCommandBuffers();
         void drawFrame();
-        void loadModels();
+        void loadGameObjects();
         void recreateSwapChain();
         void recordCommandBuffer(int imageIndex);
+        void renderGameObjects(VkCommandBuffer commandBuffer);
 
         Window window{WIDTH, HEIGHT, "Cosmos Engine"};
         EngineDevice engineDevice{window};
@@ -40,7 +42,7 @@ namespace Cosmos {
         std::unique_ptr<Pipeline> ptr_Pipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;
-        std::unique_ptr<Model> ptr_Model;
+        std::vector<GameObject> gameObjects;
 
     };
 
