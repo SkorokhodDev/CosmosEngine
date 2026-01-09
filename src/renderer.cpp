@@ -78,7 +78,6 @@ namespace Cosmos {
         assert(commandBuffer == getCurrentCommandBuffer() 
         && "Cant begin render pass on command buffer from a different frame");
 
-
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = engineSwapChain->getRenderPass();

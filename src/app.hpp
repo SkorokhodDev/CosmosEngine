@@ -7,6 +7,7 @@
 #include "game_object.hpp"
 #include "renderer.hpp"
 #include "simple_render_system.hpp"
+#include "camera.hpp"
 
 namespace Cosmos {
 

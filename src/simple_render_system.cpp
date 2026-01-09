@@ -13,8 +13,7 @@
 namespace Cosmos {
 
     struct SimplePushConstantData{
-        glm::mat2 transform{1.f}; // diagonal == 1, all others is 0
-        glm::vec2 offset;
+        glm::mat4 transform{1.f}; // offset inside this tranform matrix
         alignas(16) glm::vec3 color;
     };
 
@@ -63,19 +62,19 @@ namespace Cosmos {
             pipelineConfig);
     }
 
-    void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<GameObject> &gameObjects)
+    void SimpleRenderSystem::renderGameObjects(
+        VkCommandBuffer commandBuffer, std::vector<GameObject> &gameObjects, const Camera& camera)
     {
         ptr_Pipeline->bind(commandBuffer);
         
         for(auto& obj : gameObjects)
         {
-            obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + 0.01f, glm::two_pi<float>());
+            obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.01f, glm::two_pi<float>());
+            obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.005f, glm::two_pi<float>());
 
             SimplePushConstantData push{};
-            push.offset = obj.transform2d.translation;
             push.color = obj.color;
-            //std::cout << push.color.x << " " << push.color.y << std::endl;
-            push.transform = obj.transform2d.mat2();
+            push.transform = camera.getProjection() * obj.transform.mat4();
 
             vkCmdPushConstants(commandBuffer, 
                 pipelineLayout, 

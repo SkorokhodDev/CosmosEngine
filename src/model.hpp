@@ -13,8 +13,9 @@ namespace Cosmos {
     class Model {
     public:
 
+    // Note: when update Vertex, dont forget to update Atttribute Description
         struct Vertex {
-            glm::vec2 position;
+            glm::vec3 position;
             glm::vec3 color;
 
             static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
