@@ -23,7 +23,7 @@ namespace Cosmos {
         bool wasWindowResized() {return framebufferResized;}
         void resetWindowResizedFlag() {framebufferResized = false;}
 
-
+        GLFWwindow* getGLFWwindow() const {return window;};
         VkExtent2D getExtent() {return {static_cast<uint32_t>(WIDTH), static_cast<uint32_t>(HEIGHT)};}
 
     private:

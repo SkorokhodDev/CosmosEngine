@@ -8,6 +8,7 @@
 #include "renderer.hpp"
 #include "simple_render_system.hpp"
 #include "camera.hpp"
+#include "keyboard_movement_controller.hpp"
 
 namespace Cosmos {
 
