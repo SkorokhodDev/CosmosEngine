@@ -22,7 +22,12 @@ namespace Cosmos {
             static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
         };
 
-        Model(EngineDevice &device, const std::vector<Vertex> &vertices);
+        struct Builder {
+            std::vector<Vertex> vertices{};
+            std::vector<uint32_t> indices{};
+        };
+
+        Model(EngineDevice &device, const Model::Builder &builder);
         ~Model();
 
         Model(const Model&) = delete;
@@ -32,12 +37,18 @@ namespace Cosmos {
         void draw(VkCommandBuffer commandBuffer); 
 
     private:
+        void createVertexBuffers(const std::vector<Vertex> &vertices);
+        void createIndexBuffer(const std::vector<uint32_t> &indices);
+
         EngineDevice& engineDevice;
+
         VkBuffer vertexBuffer;
         VkDeviceMemory vertexBufferMemory;
         uint32_t vertexCount;
-
-        void createVertexBuffer(const std::vector<Vertex> &vertices);
-
+        
+        bool hasIndexBuffer = false;
+        VkBuffer indexBuffer;
+        VkDeviceMemory indexBufferMemory;
+        uint32_t indexCount;
     };
 }
