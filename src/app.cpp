@@ -68,7 +68,23 @@ namespace Cosmos {
         vkDeviceWaitIdle(engineDevice.device());
     }
 
-    // temporary helper function, creates a 1x1x1 cube centered at offset
+    void Application::loadGameObjects()
+    {   
+        //std::shared_ptr<Model> cube_model = createCubeModel_i(engineDevice, {0.f,0.f,0.f});
+        std::shared_ptr<Model> loaded_model = Model::createModelFromFile(engineDevice, "../models/smooth_vase.obj");
+        
+        auto gameObject = GameObject::createGameObject();
+        gameObject.model = loaded_model;
+        gameObject.transform.translation = {0.f, 0.0f, 2.5f};
+        gameObject.transform.scale = {0.5, 0.5f, 0.5f};
+
+        gameObjects.push_back(std::move(gameObject));
+        
+    }
+
+
+
+      // temporary helper function, creates a 1x1x1 cube centered at offset
     std::unique_ptr<Model> createCubeModel_v(EngineDevice& device, glm::vec3 offset) {
         Model::Builder modelBuilder{};
         modelBuilder.vertices = {
@@ -176,19 +192,6 @@ namespace Cosmos {
                                 12, 13, 14, 12, 15, 13, 16, 17, 18, 16, 19, 17, 20, 21, 22, 20, 23, 21};
 
         return std::make_unique<Model>(device, modelBuilder);
-    }
-
-    void Application::loadGameObjects()
-    {   
-        std::shared_ptr<Model> cube_model = createCubeModel_i(engineDevice, {0.f,0.f,0.f});
-        
-        auto cube = GameObject::createGameObject();
-        cube.model = cube_model;
-        cube.transform.translation = {0.f, 0.0f, 2.5f};
-        cube.transform.scale = {0.5, 0.5f, 0.5f};
-
-        gameObjects.push_back(std::move(cube));
-        
     }
     
 }
