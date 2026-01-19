@@ -71,15 +71,22 @@ namespace Cosmos {
     void Application::loadGameObjects()
     {   
         //std::shared_ptr<Model> cube_model = createCubeModel_i(engineDevice, {0.f,0.f,0.f});
-        std::shared_ptr<Model> loaded_model = Model::createModelFromFile(engineDevice, "../models/smooth_vase.obj");
+        std::shared_ptr<Model> loaded_model = Model::createModelFromFile(engineDevice, "../models/flat_vase.obj");
         
-        auto gameObject = GameObject::createGameObject();
-        gameObject.model = loaded_model;
-        gameObject.transform.translation = {0.f, 0.0f, 2.5f};
-        gameObject.transform.scale = {0.5, 0.5f, 0.5f};
+        auto flatVase = GameObject::createGameObject();
+        flatVase.model = loaded_model;
+        flatVase.transform.translation = {-0.5f, 0.5f, 2.5f};
+        flatVase.transform.scale = glm::vec3(3.0f);
 
-        gameObjects.push_back(std::move(gameObject));
+        gameObjects.push_back(std::move(flatVase));
         
+        loaded_model = Model::createModelFromFile(engineDevice, "../models/smooth_vase.obj");
+        auto smoothVase = GameObject::createGameObject();
+        smoothVase.model = loaded_model;
+        smoothVase.transform.translation = {0.5f, 0.5f, 2.5f};
+        smoothVase.transform.scale = glm::vec3(3.0f);
+
+        gameObjects.push_back(std::move(smoothVase));
     }
 
 
