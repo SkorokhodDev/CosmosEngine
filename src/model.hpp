@@ -4,11 +4,11 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
-
 #include <vector>
 #include <memory>
 
 #include "engine_device.hpp"
+#include "buffer.hpp"
 
 namespace Cosmos {
 
@@ -54,13 +54,11 @@ namespace Cosmos {
 
         EngineDevice& engineDevice;
 
-        VkBuffer vertexBuffer;
-        VkDeviceMemory vertexBufferMemory;
+        std::unique_ptr<Buffer> vertexBuffer;
         uint32_t vertexCount;
         
         bool hasIndexBuffer = false;
-        VkBuffer indexBuffer;
-        VkDeviceMemory indexBufferMemory;
+        std::unique_ptr<Buffer> indexBuffer;
         uint32_t indexCount;
     };
 }

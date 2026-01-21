@@ -10,9 +10,16 @@
 
 #include <iostream>
 #include <chrono>
+#include <numeric>
+
+#include "buffer.hpp"
 
 namespace Cosmos {
 
+    struct GlobalUbo{
+        glm::mat4 projectionView{1.f};
+        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+    };
 
     Application::Application()
     {
@@ -25,7 +32,22 @@ namespace Cosmos {
     }
 
 
-    void Application::run() {
+    void Application::run() 
+    {
+
+        // NonCoherentAtomSize bug fix
+        std::vector<std::unique_ptr<Buffer>> uboBuffers(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(int i = 0; i < uboBuffers.size(); i++)
+        {
+            uboBuffers[i] = std::make_unique<Buffer>(
+                engineDevice,
+                sizeof(GlobalUbo),
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            );
+            uboBuffers[i]->map();
+        }
 
         SimpleRenderSystem simpleRenderSystem{engineDevice, renderer.getSwapChainRenderPass()};
         Camera camera{};
@@ -56,9 +78,19 @@ namespace Cosmos {
 
             if(auto commandBuffer = renderer.beginFrame())
             {
+                int frameIndex = renderer.getFrameIndex();
+                FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera};
+
+                // update
+                GlobalUbo ubo{};
+                ubo.projectionView = camera.getProjection() * camera.getView();
+                uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                uboBuffers[frameIndex]->flush();
+
+                // render
                 renderer.beginSwapChainRenderPass(commandBuffer);
                 
-                simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
+                simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
                 
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();

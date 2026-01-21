@@ -58,14 +58,6 @@ namespace Cosmos {
 
     Model::~Model()
     {
-        vkDestroyBuffer(engineDevice.device(), vertexBuffer, nullptr);
-        vkFreeMemory(engineDevice.device(), vertexBufferMemory, nullptr);
-        
-        if(hasIndexBuffer)
-        {
-            vkDestroyBuffer(engineDevice.device(), indexBuffer, nullptr);
-            vkFreeMemory(engineDevice.device(), indexBufferMemory, nullptr);
-        }
     }
 
     std::unique_ptr<Model> Model::createModelFromFile(EngineDevice& device, const std::string& filepath)
@@ -79,13 +71,13 @@ namespace Cosmos {
 
     void Model::bind(VkCommandBuffer commandBuffer)
     {
-        VkBuffer buffers[] = {vertexBuffer};
+        VkBuffer buffers[] = {vertexBuffer->getBuffer()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
         if(hasIndexBuffer)
         {
-            vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         }
     }
 
@@ -104,34 +96,30 @@ namespace Cosmos {
         vertexCount = static_cast<uint32_t>(vertices.size());
         assert(vertexCount >= 3 && "Vertex count must be at least 3");
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        
-        engineDevice.createBuffer(
-            bufferSize,
+        uint32_t vertexSize = sizeof(vertices[0]);
+        // device local memory is faster, but CPU unable to acces it,
+        // staging buffer is temporary location to copy data on the cpu to the gpu
+        // and then transfer data to device local memory
+        Buffer stagingBuffer {
+            engineDevice,
+            vertexSize,
+            vertexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory 
-        );
-        void* data;
-        vkMapMemory(engineDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(engineDevice.device(), stagingBufferMemory);
+        };
+        stagingBuffer.map(); 
+        stagingBuffer.writeToBuffer((void*)vertices.data()); // cast to a void ptr
 
-        engineDevice.createBuffer(
-            bufferSize,
+        vertexBuffer = std::make_unique<Buffer>(
+            engineDevice,
+            vertexSize,
+            vertexCount,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            vertexBuffer,
-            vertexBufferMemory 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
+
         // Final destination
-        engineDevice.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-        // Clear staging buffer
-        vkDestroyBuffer(engineDevice.device(), stagingBuffer, nullptr);
-        vkFreeMemory(engineDevice.device(), stagingBufferMemory, nullptr);
+        engineDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
     }
 
     void Model::createIndexBuffer(const std::vector<uint32_t> &indices)
@@ -142,34 +130,29 @@ namespace Cosmos {
             return;
 
         VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        engineDevice.createBuffer(
-            bufferSize,
+        uint32_t indexSize = sizeof(indices[0]);
+        
+        Buffer stagingBuffer{
+            engineDevice,
+            indexSize,
+            indexCount,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory 
-        );
-        void* data;
-        vkMapMemory(engineDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(engineDevice.device(), stagingBufferMemory);
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        };
 
-        engineDevice.createBuffer(
-            bufferSize,
+        stagingBuffer.map();
+        stagingBuffer.writeToBuffer((void*)indices.data());
+
+        indexBuffer = std::make_unique<Buffer>(
+            engineDevice,
+            indexSize,
+            indexCount,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            indexBuffer,
-            indexBufferMemory 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
         );
+
         // Final destination
-        engineDevice.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-        // Clear staging buffer
-        vkDestroyBuffer(engineDevice.device(), stagingBuffer, nullptr);
-        vkFreeMemory(engineDevice.device(), stagingBufferMemory, nullptr);
+        engineDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
     }
 
     void Model::Builder::loadModel(const std::string& filepath)
