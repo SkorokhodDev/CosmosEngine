@@ -13,7 +13,7 @@ namespace Cosmos {
     class SimpleRenderSystem
     {
     public:
-        SimpleRenderSystem(EngineDevice& device, VkRenderPass renderPass);
+        SimpleRenderSystem(EngineDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~SimpleRenderSystem();
 
         SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -24,7 +24,7 @@ namespace Cosmos {
         void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
     
     private:
-        void createPipelineLayout();
+        void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
         void createPipeline(VkRenderPass renderPass);
 
         EngineDevice& engineDevice;

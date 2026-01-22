@@ -36,7 +36,7 @@ namespace Cosmos {
       VkBufferUsageFlags usageFlags,
       VkMemoryPropertyFlags memoryPropertyFlags,
       VkDeviceSize minOffsetAlignment)
-      : lveDevice{device},
+      : engineDevice{device},
         instanceSize{instanceSize},
         instanceCount{instanceCount},
         usageFlags{usageFlags},
@@ -48,8 +48,8 @@ namespace Cosmos {
 
   Buffer::~Buffer() {
     unmap();
-    vkDestroyBuffer(lveDevice.device(), buffer, nullptr);
-    vkFreeMemory(lveDevice.device(), memory, nullptr);
+    vkDestroyBuffer(engineDevice.device(), buffer, nullptr);
+    vkFreeMemory(engineDevice.device(), memory, nullptr);
   }
 
   /**
@@ -63,7 +63,7 @@ namespace Cosmos {
    */
   VkResult Buffer::map(VkDeviceSize size, VkDeviceSize offset) {
     assert(buffer && memory && "Called map on buffer before create");
-    return vkMapMemory(lveDevice.device(), memory, offset, size, 0, &mapped);
+    return vkMapMemory(engineDevice.device(), memory, offset, size, 0, &mapped);
   }
 
   /**
@@ -73,7 +73,7 @@ namespace Cosmos {
    */
   void Buffer::unmap() {
     if (mapped) {
-      vkUnmapMemory(lveDevice.device(), memory);
+      vkUnmapMemory(engineDevice.device(), memory);
       mapped = nullptr;
     }
   }
@@ -116,7 +116,7 @@ namespace Cosmos {
     mappedRange.memory = memory;
     mappedRange.offset = offset;
     mappedRange.size = size;
-    return vkFlushMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+    return vkFlushMappedMemoryRanges(engineDevice.device(), 1, &mappedRange);
   }
 
   /**
@@ -136,7 +136,7 @@ namespace Cosmos {
     mappedRange.memory = memory;
     mappedRange.offset = offset;
     mappedRange.size = size;
-    return vkInvalidateMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+    return vkInvalidateMappedMemoryRanges(engineDevice.device(), 1, &mappedRange);
   }
 
   /**

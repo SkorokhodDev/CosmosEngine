@@ -17,12 +17,22 @@
 namespace Cosmos {
 
     struct GlobalUbo{
-        glm::mat4 projectionView{1.f};
-        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+        alignas(16) glm::mat4 projectionView{1.f};
+        alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+        //alignas(16) glm::vec3 pointLight;
     };
 
     Application::Application()
     {
+        /*
+        Method Chaining (Цепочка вызовов) или Fluent Interface (Текучий интерфейс). 
+        Чаще всего он используется в паттерне проектирования Builder (Строитель).
+        */
+        globalPool = DescriptorPool::Builder(engineDevice)
+            .setMaxSets(EngineSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, EngineSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .build();
+        
         // firsly load models
         loadGameObjects();
     }
@@ -49,7 +59,23 @@ namespace Cosmos {
             uboBuffers[i]->map();
         }
 
-        SimpleRenderSystem simpleRenderSystem{engineDevice, renderer.getSwapChainRenderPass()};
+        auto globalSetLayout = DescriptorSetLayout::Builder(engineDevice)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();
+    
+
+        std::vector<VkDescriptorSet> globalDescriptorSets(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(int i = 0; i < globalDescriptorSets.size(); i++) {
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            DescriptorWriter(*globalSetLayout, *globalPool)
+                .writeBuffer(0, &bufferInfo)
+                .build(globalDescriptorSets[i]);
+        }
+        
+        SimpleRenderSystem simpleRenderSystem{engineDevice, 
+            renderer.getSwapChainRenderPass(), 
+            globalSetLayout->getDescriptorSetLayout()};
+        
         Camera camera{};
         camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -79,7 +105,7 @@ namespace Cosmos {
             if(auto commandBuffer = renderer.beginFrame())
             {
                 int frameIndex = renderer.getFrameIndex();
-                FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera};
+                FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]};
 
                 // update
                 GlobalUbo ubo{};

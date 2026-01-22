@@ -9,6 +9,7 @@
 #include "simple_render_system.hpp"
 #include "camera.hpp"
 #include "keyboard_movement_controller.hpp"
+#include "descriptors.hpp"
 
 namespace Cosmos {
 
@@ -32,6 +33,9 @@ namespace Cosmos {
         Window window{WIDTH, HEIGHT, "Cosmos Engine"};
         EngineDevice engineDevice{window};
         Renderer renderer{window, engineDevice};
+
+        // note: order of declarations matters
+        std::unique_ptr<DescriptorPool> globalPool{};
         std::vector<GameObject> gameObjects;
 
     };
