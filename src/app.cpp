@@ -17,9 +17,13 @@
 namespace Cosmos {
 
     struct GlobalUbo{
-        alignas(16) glm::mat4 projectionView{1.f};
-        alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+        glm::mat4 projectionView{1.f};
+        //alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
         //alignas(16) glm::vec3 pointLight;
+        glm::vec4 ambientLightColor{1.f, 1.f, 1.f, 0.02f};
+        glm::vec3 lightPosition{-1.f};
+        alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
+
     };
 
     Application::Application()
@@ -80,6 +84,7 @@ namespace Cosmos {
         camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
 
         auto viewerObject = GameObject::createGameObject();
+        viewerObject.transform.translation.z = -2.5f;
         KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -100,7 +105,7 @@ namespace Cosmos {
 
             float aspect = renderer.getAspectRatio();
             //camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
             if(auto commandBuffer = renderer.beginFrame())
             {
@@ -133,7 +138,7 @@ namespace Cosmos {
         
         auto flatVase = GameObject::createGameObject();
         flatVase.model = loaded_model;
-        flatVase.transform.translation = {-0.5f, 0.5f, 2.5f};
+        flatVase.transform.translation = {-0.5f, 0.5f, 0.f};
         flatVase.transform.scale = glm::vec3(3.0f);
 
         gameObjects.push_back(std::move(flatVase));
@@ -141,10 +146,18 @@ namespace Cosmos {
         loaded_model = Model::createModelFromFile(engineDevice, "../models/smooth_vase.obj");
         auto smoothVase = GameObject::createGameObject();
         smoothVase.model = loaded_model;
-        smoothVase.transform.translation = {0.5f, 0.5f, 2.5f};
+        smoothVase.transform.translation = {0.5f, 0.5f, 0.f};
         smoothVase.transform.scale = glm::vec3(3.0f);
 
         gameObjects.push_back(std::move(smoothVase));
+
+        loaded_model = Model::createModelFromFile(engineDevice, "../models/quad.obj");
+        auto floor = GameObject::createGameObject();
+        floor.model = loaded_model;
+        floor.transform.translation = {0.0f, 0.5f, 0.0f};
+        floor.transform.scale = glm::vec3(3.0f);
+        
+        gameObjects.push_back(std::move(floor));
     }
 
 
