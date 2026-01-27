@@ -15,6 +15,7 @@ struct PointLight {
 layout(set = 0, binding = 0) uniform GlobalUbo{
     mat4 projection;
     mat4 view;
+    mat4 invView;
     vec4 ambientLightColor; // w is intensity
     PointLight pointLights[10];
     int numLights;
@@ -28,22 +29,35 @@ layout(push_constant) uniform Push {
 void main()
 {
     vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+    vec3 specularLight = vec3(0.0);
     vec3 surfaceNormal = normalize(fragNormalWorld);
     
+    vec3 cameraPosWorld = vec3(ubo.invView[3].xyz);
+    vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
+
     for(int i = 0; i < ubo.numLights; i++) {
         PointLight light = ubo.pointLights[i];
         vec3 directionToLight = light.position.xyz - fragPosWorld;
         float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
-        float cosAngleIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0.0);
+        
+        directionToLight = normalize(directionToLight);
+
+        float cosAngleIncidence = max(dot(surfaceNormal, directionToLight), 0.0);
         vec3 intensity = light.color.xyz * light.color.w * attenuation;
 
         diffuseLight += intensity * cosAngleIncidence;
+
+        // specular lighting
+        vec3 halfAngle = normalize(directionToLight + viewDirection);
+        float blinnTerm = dot(surfaceNormal, halfAngle);
+        blinnTerm = clamp(blinnTerm, 0, 1);
+        blinnTerm = pow(blinnTerm, 32.0); // higher values -> sharper highlight
+        specularLight += intensity * blinnTerm;
     }
     
     //only works correctly if scale is uniform (=1 in all axes)
     //vec3 normalWorldSpace = normalize(mat3(push.modelMatrix) * normal);
     //calculating the inverse in a shader can be expensive and should be avoided
     //mat3 normalMatrix = transpose(inverse(mat3(push.modelMatrix)));
-
-    outColor = vec4(diffuseLight * fragColor, 1.0);
+    outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
 }

@@ -83,8 +83,8 @@ namespace Cosmos {
             auto& obj = kv.second;
             if(obj.pointLight == nullptr) continue;
 
-            assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum specified");
-
+            assert(lightIndex < MAX_LIGHTS && "Point lights exceed maximum of the limit");
+            
             obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
             
             // copy light to ubo
