@@ -16,6 +16,8 @@ namespace Cosmos {
 
         //VkViewport viewport;
         //VkRect2D scissor;
+        std::vector<VkVertexInputBindingDescription> bindindDescriptions{};
+         std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
         VkPipelineViewportStateCreateInfo viewportInfo;
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
         VkPipelineRasterizationStateCreateInfo rasterizationInfo;
