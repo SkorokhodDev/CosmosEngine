@@ -21,6 +21,7 @@ namespace Cosmos {
 
         void run();
 
+        void update(FrameInfo& frameInfo, GlobalUbo& ubo);
         void render(FrameInfo& frameInfo);
     
     private:
