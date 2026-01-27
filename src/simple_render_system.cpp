@@ -66,7 +66,7 @@ namespace Cosmos {
     }
 
     void SimpleRenderSystem::renderGameObjects(
-        FrameInfo& frameInfo, std::vector<GameObject>& gameObjects)
+        FrameInfo& frameInfo)
         // VkCommandBuffer commandBuffer, std::vector<GameObject> &gameObjects, const Camera& camera)
     {
         ptr_Pipeline->bind(frameInfo.commandBuffer);
@@ -80,9 +80,12 @@ namespace Cosmos {
             &frameInfo.globalDescriptorSet,
             0, 
             nullptr);
-        
-        for(auto& obj : gameObjects)
+        // kv - key value pair
+        for(auto& kv : frameInfo.gameObjects)
         {
+            auto& obj = kv.second;
+            if(obj.model == nullptr) continue;
+            
             SimplePushConstantData push{};
             push.modelMatrix =  obj.transform.mat4();
             push.normalMatrix = obj.transform.normalMatrix();

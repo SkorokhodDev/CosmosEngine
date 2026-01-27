@@ -21,7 +21,7 @@ namespace Cosmos {
 
         void run();
 
-        void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
+        void renderGameObjects(FrameInfo& frameInfo);
     
     private:
         void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
@@ -30,7 +30,6 @@ namespace Cosmos {
         EngineDevice& engineDevice;
         std::unique_ptr<Pipeline> ptr_Pipeline;
         VkPipelineLayout pipelineLayout;
-        std::vector<GameObject> gameObjects;
 
     };
 

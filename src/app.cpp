@@ -64,7 +64,7 @@ namespace Cosmos {
         }
 
         auto globalSetLayout = DescriptorSetLayout::Builder(engineDevice)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
             .build();
     
 
@@ -110,7 +110,7 @@ namespace Cosmos {
             if(auto commandBuffer = renderer.beginFrame())
             {
                 int frameIndex = renderer.getFrameIndex();
-                FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]};
+                FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex], gameObjects};
 
                 // update
                 GlobalUbo ubo{};
@@ -121,7 +121,7 @@ namespace Cosmos {
                 // render
                 renderer.beginSwapChainRenderPass(commandBuffer);
                 
-                simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+                simpleRenderSystem.renderGameObjects(frameInfo);
                 
                 renderer.endSwapChainRenderPass(commandBuffer);
                 renderer.endFrame();
@@ -136,12 +136,14 @@ namespace Cosmos {
         //std::shared_ptr<Model> cube_model = createCubeModel_i(engineDevice, {0.f,0.f,0.f});
         std::shared_ptr<Model> loaded_model = Model::createModelFromFile(engineDevice, "../models/flat_vase.obj");
         
+        // TODO: Add here a macros or a separate fucntion
+
         auto flatVase = GameObject::createGameObject();
         flatVase.model = loaded_model;
         flatVase.transform.translation = {-0.5f, 0.5f, 0.f};
         flatVase.transform.scale = glm::vec3(3.0f);
 
-        gameObjects.push_back(std::move(flatVase));
+        gameObjects.emplace(flatVase.getId(), std::move(flatVase));
         
         loaded_model = Model::createModelFromFile(engineDevice, "../models/smooth_vase.obj");
         auto smoothVase = GameObject::createGameObject();
@@ -149,7 +151,7 @@ namespace Cosmos {
         smoothVase.transform.translation = {0.5f, 0.5f, 0.f};
         smoothVase.transform.scale = glm::vec3(3.0f);
 
-        gameObjects.push_back(std::move(smoothVase));
+        gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
         loaded_model = Model::createModelFromFile(engineDevice, "../models/quad.obj");
         auto floor = GameObject::createGameObject();
@@ -157,7 +159,7 @@ namespace Cosmos {
         floor.transform.translation = {0.0f, 0.5f, 0.0f};
         floor.transform.scale = glm::vec3(3.0f);
         
-        gameObjects.push_back(std::move(floor));
+        gameObjects.emplace(floor.getId(), std::move(floor));
     }
 
 
