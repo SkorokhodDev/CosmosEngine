@@ -119,6 +119,7 @@ namespace Cosmos {
                 // render
                 renderer.beginSwapChainRenderPass(commandBuffer);
                 
+                // order here matters
                 simpleRenderSystem.renderGameObjects(frameInfo);
                 pointLightSystem.render(frameInfo);
                 

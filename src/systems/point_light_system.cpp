@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <array>
+#include <map>
 
 #include <iostream>
 
@@ -56,6 +57,7 @@ namespace Cosmos {
 
         PipelineConfigInfo pipelineConfig{};
         Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+        Pipeline::enableAlphaBlending(pipelineConfig);
 
         pipelineConfig.attributeDescriptions.clear();
         pipelineConfig.bindindDescriptions.clear();
@@ -99,6 +101,19 @@ namespace Cosmos {
         FrameInfo &frameInfo)
     // VkCommandBuffer commandBuffer, std::vector<GameObject> &gameObjects, const Camera& camera)
     {
+        // sort lights
+        std::map<float, GameObject::id_t> sorted;
+        for(auto& kv : frameInfo.gameObjects)
+        {
+            auto& obj = kv.second;
+            if(obj.pointLight == nullptr) continue;
+
+            // calculate distance
+            auto offset = frameInfo.camera.getPosition() - obj.transform.translation;
+            float disSquared = glm::dot(offset, offset);
+            sorted[disSquared] = obj.getId();
+        }
+
         ptr_Pipeline->bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
@@ -111,10 +126,10 @@ namespace Cosmos {
             0, 
             nullptr);
 
-        for(auto& kv : frameInfo.gameObjects)
+        // interate through sorted lights in reverse order
+        for(auto it = sorted.rbegin(); it != sorted.rend(); ++it)
         {
-            auto& obj = kv.second;
-            if(obj.pointLight == nullptr) continue;
+            auto& obj = frameInfo.gameObjects.at(it->second);
             
             PointLightPushConstants push{};
             push.position =  glm::vec4(obj.transform.translation, 1.f);
